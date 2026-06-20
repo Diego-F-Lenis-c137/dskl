@@ -95,6 +95,10 @@ pub struct Args {
     #[arg(long)]
     pub timeout: Option<Timeout>,
 
+    /// custom ANSI 256 colors for used, available, and size (0-255): --cust_color 209 65 172
+    #[arg(long = "cust_color", num_args = 3, value_names = &["USED", "AVAILABLE", "SIZE"])]
+    pub cust_color: Option<Vec<u8>>,
+
     /// width of the progress bar in the 'use' and 'inodes' columns
     #[arg(long, default_value = "5", value_name = "width")]
     pub bar_width: usize,

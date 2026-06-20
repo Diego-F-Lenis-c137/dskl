@@ -25,10 +25,22 @@ use {
 // those colors are chosen to be "redish" for used, "greenish" for available
 // and, most importantly, to work on both white and black backgrounds. If you
 // find a better combination, please show me.
-static USED_COLOR: u8 = 209;
-static AVAI_COLOR: u8 = 65;
-static SIZE_COLOR: u8 = 172;
-static BAR_WIDTH_SPACE_THRESHOLD: usize = 4;
+const DEFAULT_USED_COLOR: u8 = 209;
+const DEFAULT_AVAI_COLOR: u8 = 65;
+const DEFAULT_SIZE_COLOR: u8 = 172;
+const BAR_WIDTH_SPACE_THRESHOLD: usize = 4;
+
+fn get_colors(cust_color: Option<&[u8]>) -> (u8, u8, u8) {
+    cust_color
+        .and_then(|c| {
+            if c.len() == 3 {
+                Some((c[0], c[1], c[2]))
+            } else {
+                None
+            }
+        })
+        .unwrap_or((DEFAULT_USED_COLOR, DEFAULT_AVAI_COLOR, DEFAULT_SIZE_COLOR))
+}
 
 pub fn write<W: Write>(
     w: &mut W,
@@ -108,8 +120,9 @@ pub fn write<W: Write>(
             );
         }
     }
+    let (used_color, avai_color, size_color) = get_colors(args.cust_color.as_deref());
     let mut skin = if color {
-        make_colored_skin()
+        make_colored_skin(used_color, avai_color, size_color)
     } else {
         MadSkin::no_style()
     };
@@ -191,12 +204,12 @@ fn string_fitting_cols(
     }
 }
 
-fn make_colored_skin() -> MadSkin {
+fn make_colored_skin(used_color: u8, avai_color: u8, size_color: u8) -> MadSkin {
     MadSkin {
-        bold: CompoundStyle::with_fg(AnsiValue(SIZE_COLOR)), // size
-        inline_code: CompoundStyle::with_fgbg(AnsiValue(USED_COLOR), AnsiValue(AVAI_COLOR)), // use bar
-        strikeout: CompoundStyle::with_fg(AnsiValue(USED_COLOR)),                            // use%
-        italic: CompoundStyle::with_fg(AnsiValue(AVAI_COLOR)), // available
+        bold: CompoundStyle::with_fg(AnsiValue(size_color)), // size
+        inline_code: CompoundStyle::with_fgbg(AnsiValue(used_color), AnsiValue(avai_color)), // use bar
+        strikeout: CompoundStyle::with_fg(AnsiValue(used_color)),                            // use%
+        italic: CompoundStyle::with_fg(AnsiValue(avai_color)), // available
         ..Default::default()
     }
 }
